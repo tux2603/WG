@@ -24,7 +24,7 @@ class Sprite(pyglet.sprite.Sprite):
 
     def __init__(self, img, x=0, y=0, blend_src=770, blend_dest=771, batch=None, group=None, usage='dynamic', subpixel=False):
         super(Sprite, self).__init__(img, x=x, y=y, blend_src=blend_src, blend_dest=blend_dest,
-              batch=batch, group=group, usage=usage, subpixel=subpixel)
+                                     batch=batch, group=group, usage=usage, subpixel=subpixel)
         self.setImage(img)
 
     # Sets the image of the sprite and updates the pixel map data used for collison detection
@@ -43,7 +43,8 @@ class Sprite(pyglet.sprite.Sprite):
         # load the transparency values from the raw data string into the array
         for x in range(rawData.width):
             for y in range(rawData.height):
-                self.pixelMap[x][y] = pixelData[(x + y * rawData.width) * len(colorFormat) + 3]
+                self.pixelMap[x][y] = pixelData[(
+                    x + y * rawData.width) * len(colorFormat) + 3]
 
     # Gets a transformation matrix for the sprite
     def getTransformMatrix(self):
@@ -83,7 +84,8 @@ class Sprite(pyglet.sprite.Sprite):
         self.setSpeedAndDirection(speed, newAngle)
 
     def changeDirectionAngle(self, delta):
-        self._velocity = (self._velocity[0] * cos(delta) + self._velocity[1] * -sin(delta), self._velocity[0] * sin(delta) + self._velocity[1] * cos(delta))
+        self._velocity = (self._velocity[0] * cos(delta) + self._velocity[1] * -sin(
+            delta), self._velocity[0] * sin(delta) + self._velocity[1] * cos(delta))
 
     def getDirectionTo(self, other):
         deltaPos = self.position - other.position
@@ -93,14 +95,22 @@ class Sprite(pyglet.sprite.Sprite):
         return angle
 
     def setVelocity(self, newVelocity):
-        newSpeed = sqrt(newVelocity[0] * newVelocity[0] + newVelocity[1] * newVelocity[1])
-        
+        newSpeed = sqrt(
+            newVelocity[0] * newVelocity[0] + newVelocity[1] * newVelocity[1])
+
         reductionFactor = 1
 
         if newSpeed > self.maxSpeed:
             reductionFactor = self.maxSpeed / newSpeed
 
-        self._velocity = (newVelocity[0] * reductionFactor, newVelocity[1] * reductionFactor)
+        self._velocity = (
+            newVelocity[0] * reductionFactor, newVelocity[1] * reductionFactor)
+
+    def setVelocityX(self, newVelocity):
+        self.setVelocity((newVelocity, self._velocity[1]))
+
+    def setVelocityY(self, newVelocity):
+        self.setVelocity((self._velocity[0], newVelocity))
 
     def _checkTTL(self):
         if self.ttl >= 0:
@@ -108,14 +118,15 @@ class Sprite(pyglet.sprite.Sprite):
 
         elif self.ttl == 0:
             self.visible = False
-        
+
         return self.visible
 
     def move(self):
         if not self._checkTTL():
             return False
-        
-        self.position = (self.position[0] + self._velocity[0], self.position[1] + self._velocity[1])
+
+        self.position = (
+            self.position[0] + self._velocity[0], self.position[1] + self._velocity[1])
 
         return True
 
@@ -124,12 +135,28 @@ class Sprite(pyglet.sprite.Sprite):
             ax = acceleration[0]
             ay = acceleration[1]
         else:
-            ax = acceleration * self._velocity[0] / (self._velocity[0] + self._velocity[1])
-            ay = acceleration * self._velocity[1] / (self._velocity[0] + self._velocity[1])
+            ax = acceleration * self._velocity[0] / \
+                (self._velocity[0] + self._velocity[1])
+            ay = acceleration * self._velocity[1] / \
+                (self._velocity[0] + self._velocity[1])
 
-        self._velocity[0] += ax
-        self._velocity[1] += ay
+        self._velocity = (self._velocity[0] + ax, self._velocity[1] + ay)
+        
 
+
+class Ground(Sprite):
+    blocksTop = False
+    blocksBottom = False
+    blocksLeft = False
+    blocksRight = False
+    buoyancy = 0
+
+    def setAttributes(self, blocksTop=False, blocksBottom=False, blocksLeft=False, blocksRight=False, buoyancy=0):
+        self.blocksTop = blocksTop
+        self.blocksBottom = blocksBottom
+        self.blocksLeft = blocksLeft
+        self.blocksRight = blocksRight
+        self.buoyancy = buoyancy
 
 
 class Matrix():
